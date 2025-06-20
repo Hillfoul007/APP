@@ -10,14 +10,20 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target:
+          mode === "production"
+            ? "https://auth-back-ula7.onrender.com"
+            : "http://localhost:3001",
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
       "/health": {
-        target: "http://localhost:3001",
+        target:
+          mode === "production"
+            ? "https://auth-back-ula7.onrender.com"
+            : "http://localhost:3001",
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },

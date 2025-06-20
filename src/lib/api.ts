@@ -1,6 +1,8 @@
 // API client for backend integration
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://auth-back-ula7.onrender.com/api";
 
 interface ApiResponse<T> {
   data?: T;
