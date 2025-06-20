@@ -144,33 +144,59 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
     if (!editingBooking) return;
 
     try {
-      // For demo purposes, we'll just update the local state
-      // In real app, this would call an API endpoint
-      const updatedBookings = bookings.map((booking: any) =>
-        booking._id === editingBooking._id
-          ? {
-              ...booking,
-              scheduled_date: editForm.scheduled_date
-                .toISOString()
-                .split("T")[0],
-              scheduled_time: editForm.scheduled_time,
-              address: editForm.address,
-              additional_details: editForm.additional_details,
-              updated_at: new Date(),
-            }
-          : booking,
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL ||
+        "https://auth-back-ula7.onrender.com/api";
+
+      // Call backend API to update booking
+      const response = await fetch(
+        `${API_BASE_URL}/bookings/${editingBooking._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          },
+          body: JSON.stringify({
+            scheduled_date: editForm.scheduled_date.toISOString().split("T")[0],
+            scheduled_time: editForm.scheduled_time,
+            address: editForm.address,
+            additional_details: editForm.additional_details,
+          }),
+        },
       );
 
-      setBookings(updatedBookings);
-      setEditingBooking(null);
+      if (response.ok) {
+        // Update the booking in the local state only if backend update succeeds
+        const updatedBookings = bookings.map((booking: any) =>
+          booking._id === editingBooking._id
+            ? {
+                ...booking,
+                scheduled_date: editForm.scheduled_date
+                  .toISOString()
+                  .split("T")[0],
+                scheduled_time: editForm.scheduled_time,
+                address: editForm.address,
+                additional_details: editForm.additional_details,
+                updated_at: new Date(),
+              }
+            : booking,
+        );
 
-      // Here you would typically call the backend API
-      console.log("Booking updated:", {
-        bookingId: editingBooking._id,
-        ...editForm,
-      });
+        setBookings(updatedBookings);
+        setEditingBooking(null);
+
+        // Show success message
+        alert("Booking updated successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(
+          `Failed to update booking: ${errorData.error || "Unknown error"}`,
+        );
+      }
     } catch (error) {
       console.error("Error updating booking:", error);
+      alert("Network error. Please check your connection and try again.");
     }
   };
 
