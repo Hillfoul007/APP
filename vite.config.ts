@@ -5,10 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const isProduction = mode === "production";
-  const backendUrl = isProduction
-    ? "https://auth-back-ula7.onrender.com"
-    : "http://localhost:3001";
+  // Always use production backend since it's deployed on Render
+  const backendUrl = "https://auth-back-ula7.onrender.com";
 
   return {
     server: {
@@ -18,12 +16,31 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: backendUrl,
           changeOrigin: true,
-          secure: isProduction,
+          secure: true,
+          configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.log("proxy error", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              console.log(
+                "Sending Request to the Target:",
+                req.method,
+                req.url,
+              );
+            });
+            proxy.on("proxyRes", (proxyRes, req, _res) => {
+              console.log(
+                "Received Response from the Target:",
+                proxyRes.statusCode,
+                req.url,
+              );
+            });
+          },
         },
         "/health": {
           target: backendUrl,
           changeOrigin: true,
-          secure: isProduction,
+          secure: true,
         },
       },
     },
