@@ -88,10 +88,10 @@ class ErrorBoundary extends React.Component<
               <div className="space-y-2">
                 <h4 className="font-semibold">Troubleshooting Steps:</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm text-gray-600">
-                  <li>Check if the backend server is running on port 3001</li>
+                  <li>Check if the backend server is running on Render</li>
                   <li>
                     Verify the health endpoint:{" "}
-                    <code>http://localhost:3001/health</code>
+                    <code>https://auth-back-ula7.onrender.com/health</code>
                   </li>
                   <li>Check browser console for additional error details</li>
                   <li>Try refreshing the page</li>
@@ -109,7 +109,7 @@ class ErrorBoundary extends React.Component<
 
                 <Button variant="outline" asChild>
                   <a
-                    href="http://localhost:3001/health"
+                    href="https://auth-back-ula7.onrender.com/health"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

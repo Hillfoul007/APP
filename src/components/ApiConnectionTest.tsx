@@ -183,7 +183,7 @@ const ApiConnectionTest: React.FC = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               ❌ Some connections failed. Make sure the backend server is
-              running on port 3001.
+              running on Render.
             </AlertDescription>
           </Alert>
         )}
@@ -202,7 +202,7 @@ const ApiConnectionTest: React.FC = () => {
           {allConnected && (
             <Button className="flex items-center gap-2" asChild>
               <a
-                href="http://localhost:3001/health"
+                href="https://auth-back-ula7.onrender.com/health"
                 target="_blank"
                 rel="noopener noreferrer"
               >
