@@ -193,7 +193,10 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
       console.log("Booking cancelled:", bookingId);
 
       // Call backend to update in MongoDB
-      await fetch(`/api/bookings/${bookingId}`, {
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL ||
+        "https://auth-back-ula7.onrender.com/api";
+      await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
