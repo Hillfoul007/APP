@@ -33,12 +33,16 @@ const RiderSetupChecker: React.FC<RiderSetupCheckerProps> = ({
 
       // Check if backend is running
       try {
-        const healthResponse = await fetch("http://localhost:3001/health");
+        const healthResponse = await fetch(
+          "https://auth-back-ula7.onrender.com/health",
+        );
         if (healthResponse.ok) {
           status.backendRunning = true;
 
           // Check if API endpoints are working
-          const testResponse = await fetch("http://localhost:3001/api/test");
+          const testResponse = await fetch(
+            "https://auth-back-ula7.onrender.com/api/test",
+          );
           if (testResponse.ok) {
             status.apiEndpoints = true;
             status.mongodbConfigured = true; // If API works, MongoDB is likely configured
@@ -112,9 +116,7 @@ const RiderSetupChecker: React.FC<RiderSetupCheckerProps> = ({
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>
               <h3 className="font-medium">Backend Server</h3>
-              <p className="text-sm text-gray-600">
-                Server running on port 3001
-              </p>
+              <p className="text-sm text-gray-600">Server running on Render</p>
             </div>
             {getStatusBadge(setupStatus.backendRunning)}
           </div>
@@ -148,7 +150,7 @@ const RiderSetupChecker: React.FC<RiderSetupCheckerProps> = ({
                 <p>Some components are not ready. Please ensure:</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   {!setupStatus.backendRunning && (
-                    <li>Backend server is running on port 3001</li>
+                    <li>Backend server is running on Render</li>
                   )}
                   {!setupStatus.mongodbConfigured && (
                     <li>MongoDB connection is properly configured</li>
@@ -201,8 +203,8 @@ const RiderSetupChecker: React.FC<RiderSetupCheckerProps> = ({
         </div>
 
         <div className="text-xs text-gray-500 space-y-1">
-          <p>🔧 Backend Health: http://localhost:3001/health</p>
-          <p>🧪 API Test: http://localhost:3001/api/test</p>
+          <p>🔧 Backend Health: https://auth-back-ula7.onrender.com/health</p>
+          <p>🧪 API Test: https://auth-back-ula7.onrender.com/api/test</p>
           <p>📚 Documentation: See MONGODB_SETUP_GUIDE.md</p>
         </div>
       </CardContent>
