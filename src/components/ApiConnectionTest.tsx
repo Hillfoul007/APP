@@ -221,7 +221,7 @@ const ApiConnectionTest: React.FC = () => {
         </div>
 
         <div className="text-xs text-gray-500 space-y-1">
-          <p>🔧 Backend: Proxied through Vite dev server</p>
+          <p>🔧 Backend: https://auth-back-ula7.onrender.com</p>
           <p>📊 Health: /health</p>
           <p>🧪 API Test: /api/test</p>
         </div>
