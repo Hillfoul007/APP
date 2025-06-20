@@ -176,7 +176,19 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
 
   const cancelBooking = async (bookingId: string) => {
     try {
-      // Update booking status to cancelled
+      // Use the booking helper to cancel the booking
+      const { data, error } = await bookingHelpers.cancelBooking(
+        bookingId,
+        currentUser._id || currentUser.id,
+        "customer",
+      );
+
+      if (error) {
+        alert(`Failed to cancel booking: ${error.message}`);
+        return;
+      }
+
+      // Update booking status to cancelled in local state
       const updatedBookings = bookings.map((booking: any) =>
         booking._id === bookingId
           ? {
@@ -188,27 +200,10 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
       );
 
       setBookings(updatedBookings);
-
-      // Here you would typically call the backend API
-      console.log("Booking cancelled:", bookingId);
-
-      // Call backend to update in MongoDB
-      const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL ||
-        "https://auth-back-ula7.onrender.com/api";
-      await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-        body: JSON.stringify({
-          user_id: currentUser._id || currentUser.id,
-          user_type: "customer",
-        }),
-      });
+      alert("Booking cancelled successfully!");
     } catch (error) {
       console.error("Error cancelling booking:", error);
+      alert("Network error. Please check your connection and try again.");
     }
   };
 
