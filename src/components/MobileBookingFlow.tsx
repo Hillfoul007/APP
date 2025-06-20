@@ -535,7 +535,7 @@ const MobileBookingFlow: React.FC<MobileBookingFlowProps> = ({
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-lg font-semibold text-gray-900">Book Service</h1>
-          <div className="w-8" /> {/* Spacer */}
+          <div className="w-8"></div>
         </div>
 
         {/* Progress Bar */}
