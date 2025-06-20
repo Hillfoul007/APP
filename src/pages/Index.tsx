@@ -5,7 +5,7 @@ import EnhancedBookingHistory from "../components/EnhancedBookingHistory";
 import Reviews from "../components/Reviews";
 import JoinAsPro from "./JoinAsPro.tsx";
 import AccountMenu from "../components/AccountMenu"; // Can be removed if unused
-import SimplePhoneAuthModal from "../components/SimplePhoneAuthModal";
+import StreamlinedPhoneAuth from "../components/StreamlinedPhoneAuth";
 import { ArrowLeft, MapPin, UserCircle } from "lucide-react";
 import {
   getCurrentUser,
