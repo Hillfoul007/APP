@@ -145,6 +145,18 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
 
     try {
       const customerId = currentUser._id || currentUser.uid || currentUser.id;
+      // Construct complete address
+      const completeAddress = [
+        addressDetails.houseNumber,
+        addressDetails.apartmentName,
+        selectedAddress,
+        addressDetails.area,
+        addressDetails.landmark && `Near ${addressDetails.landmark}`,
+        addressDetails.floor && `Floor: ${addressDetails.floor}`,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
       const bookingData = {
         customer_id: customerId,
         service: isMultipleServices
@@ -161,19 +173,31 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
         provider_name: isMultipleServices
           ? "Multiple Providers"
           : provider?.provider || "Home Services",
-        address: selectedAddress,
+        address: completeAddress || selectedAddress,
         coordinates: addressCoordinates,
-        additional_details: additionalDetails,
+        additional_details: [
+          additionalDetails,
+          addressDetails.instructions &&
+            `Instructions: ${addressDetails.instructions}`,
+        ]
+          .filter(Boolean)
+          .join("\n"),
         total_price: calculateTotalPrice(),
         final_amount: calculateFinalAmount(),
-        special_instructions: additionalDetails,
+        special_instructions: [
+          additionalDetails,
+          addressDetails.instructions,
+          addressDetails.landmark && `Landmark: ${addressDetails.landmark}`,
+          addressDetails.floor && `Floor: ${addressDetails.floor}`,
+        ]
+          .filter(Boolean)
+          .join(", "),
+        address_details: addressDetails,
         charges_breakdown: {
           base_price: calculateTotalPrice(),
-          service_fee: calculateTotalPrice() * 0.1,
-          tax_amount:
-            (calculateTotalPrice() + calculateTotalPrice() * 0.1) * 0.12,
-          discount:
-            calculateFinalAmount() > 200 ? calculateTotalPrice() * 0.05 : 0,
+          service_fee: getDeliveryCharge(),
+          tax_amount: (calculateTotalPrice() + getDeliveryCharge()) * 0.12,
+          discount: getCouponDiscount(),
         },
       };
 
