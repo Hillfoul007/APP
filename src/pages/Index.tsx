@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import ServiceCategories from "../components/ServiceCategories";
+import MobileServiceCategories from "../components/MobileServiceCategories";
 import BookingFlow from "../components/BookingFlow";
 import EnhancedBookingHistory from "../components/EnhancedBookingHistory";
 import Reviews from "../components/Reviews";
 import JoinAsPro from "./JoinAsPro.tsx";
 import AccountMenu from "../components/AccountMenu"; // Can be removed if unused
-import StreamlinedPhoneAuth from "../components/StreamlinedPhoneAuth";
+import MobileFirebaseAuth from "../components/MobileFirebaseAuth";
 import { ArrowLeft, MapPin, UserCircle } from "lucide-react";
 import {
   getCurrentUser,
@@ -264,8 +264,8 @@ const Index = () => {
       {/* Header */}
       <header className="bg-gradient-to-r from-slate-900 to-blue-900 shadow-xl sticky top-0 z-30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 sm:h-18">
-            <div className="flex items-center gap-4">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            <div className="flex items-center gap-2 sm:gap-4">
               {currentView !== "categories" && (
                 <button
                   onClick={navigateBack}
@@ -274,26 +274,28 @@ const Index = () => {
                   <ArrowLeft className="h-5 w-5 text-white" />
                 </button>
               )}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">H</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg sm:text-xl">
+                    H
+                  </span>
                 </div>
-                <div>
-                  <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                <div className="hidden sm:block">
+                  <h1 className="text-xl font-bold text-white tracking-tight">
                     HomeServices Pro
                   </h1>
-                  <p className="text-blue-200 text-xs hidden sm:block">
+                  <p className="text-blue-200 text-xs">
                     Professional Services Platform
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 px-2 sm:px-3 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <MapPin className="h-4 w-4 text-blue-300" />
-                <span className="hidden sm:inline text-white font-medium text-sm">
-                  {currentLocation || "Detecting location..."}
+                <span className="text-white font-medium text-xs sm:text-sm max-w-24 sm:max-w-none truncate">
+                  {currentLocation || "Detecting..."}
                 </span>
               </div>
 
@@ -313,9 +315,9 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-8">
         {currentView === "categories" && (
-          <ServiceCategories
+          <MobileServiceCategories
             onServiceSelect={handleServiceSelect}
             onMultipleServicesSelect={handleMultipleServicesSelect}
           />
@@ -346,7 +348,7 @@ const Index = () => {
       </main>
 
       {/* Auth Modal */}
-      <StreamlinedPhoneAuth
+      <MobileFirebaseAuth
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleLoginSuccess}

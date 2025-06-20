@@ -23,19 +23,29 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const analytics = getAnalytics(app);
 
-// Phone authentication helpers
+// Initialize Analytics (only in browser)
+let analytics;
+if (typeof window !== "undefined") {
+  analytics = getAnalytics(app);
+}
+
+export { analytics };
+
+// Firebase phone auth helpers
 export const setupRecaptcha = (containerId: string) => {
-  return new RecaptchaVerifier(auth, containerId, {
-    size: "invisible",
-    callback: (response: any) => {
-      console.log("reCAPTCHA solved");
-    },
-    "expired-callback": () => {
-      console.log("reCAPTCHA expired");
-    },
-  });
+  if (!window.recaptchaVerifier) {
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      size: "invisible",
+      callback: (response: any) => {
+        console.log("reCAPTCHA solved");
+      },
+      "expired-callback": () => {
+        console.log("reCAPTCHA expired");
+      },
+    });
+  }
+  return window.recaptchaVerifier;
 };
 
 export const sendOTP = async (
@@ -55,9 +65,9 @@ export const sendOTP = async (
   }
 };
 
-export const verifyOTP = async (confirmationResult: any, otp: string) => {
+export const verifyOTP = async (confirmationResult: any, otpCode: string) => {
   try {
-    const result = await confirmationResult.confirm(otp);
+    const result = await confirmationResult.confirm(otpCode);
     return { success: true, user: result.user };
   } catch (error: any) {
     console.error("Error verifying OTP:", error);
@@ -65,4 +75,9 @@ export const verifyOTP = async (confirmationResult: any, otp: string) => {
   }
 };
 
-export default app;
+// Global type declaration for recaptchaVerifier
+declare global {
+  interface Window {
+    recaptchaVerifier: RecaptchaVerifier;
+  }
+}
