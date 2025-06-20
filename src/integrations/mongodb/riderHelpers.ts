@@ -1,6 +1,8 @@
 // Rider helpers for MongoDB integration
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://auth-back-ula7.onrender.com/api";
 
 export interface Rider {
   _id: string;
