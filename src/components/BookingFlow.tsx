@@ -609,7 +609,7 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
       </div>
 
       {/* Authentication Modal */}
-      <SimplePhoneAuthModal
+      <MobileFirebaseAuth
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleLoginSuccess}
