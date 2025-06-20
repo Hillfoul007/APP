@@ -346,7 +346,7 @@ const Index = () => {
       </main>
 
       {/* Auth Modal */}
-      <SimplePhoneAuthModal
+      <StreamlinedPhoneAuth
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleLoginSuccess}
