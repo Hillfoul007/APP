@@ -95,27 +95,38 @@ const Index = () => {
           setLocationCoordinates({ lat: latitude, lng: longitude });
 
           // Try backend geocoding first
-          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://auth-back-ula7.onrender.com/api";
+          const API_BASE_URL =
+            import.meta.env.VITE_API_BASE_URL ||
+            "https://auth-back-ula7.onrender.com/api";
           try {
-            const backendResponse = await fetch(`${API_BASE_URL}/location/geocode`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ lat: latitude, lng: longitude })
-            });
+            const backendResponse = await fetch(
+              `${API_BASE_URL}/location/geocode`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lat: latitude, lng: longitude }),
+              },
+            );
 
             if (backendResponse.ok) {
               const data = await backendResponse.json();
-              setCurrentLocation(data.address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+              setCurrentLocation(
+                data.address ||
+                  `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              );
               return;
             }
           } catch (backendError) {
-            console.log("Backend geocoding failed, trying fallback:", backendError);
+            console.log(
+              "Backend geocoding failed, trying fallback:",
+              backendError,
+            );
           }
 
           // Fallback to OpenStreetMap if backend fails
           try {
             const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
             );
 
             if (response.ok) {
@@ -127,19 +138,35 @@ const Index = () => {
                 if (data.address.road) parts.push(data.address.road);
                 if (data.address.suburb || data.address.neighbourhood)
                   parts.push(data.address.suburb || data.address.neighbourhood);
-                if (data.address.city || data.address.town || data.address.village)
-                  parts.push(data.address.city || data.address.town || data.address.village);
+                if (
+                  data.address.city ||
+                  data.address.town ||
+                  data.address.village
+                )
+                  parts.push(
+                    data.address.city ||
+                      data.address.town ||
+                      data.address.village,
+                  );
                 if (data.address.state) parts.push(data.address.state);
                 address = parts.join(", ");
               }
 
-              setCurrentLocation(address || data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+              setCurrentLocation(
+                address ||
+                  data.display_name ||
+                  `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              );
             } else {
-              setCurrentLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+              setCurrentLocation(
+                `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              );
             }
           } catch (nominatimError) {
             console.log("Nominatim geocoding failed:", nominatimError);
-            setCurrentLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            setCurrentLocation(
+              `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            );
           }
         } catch (err) {
           console.log("Location processing failed:", err);
@@ -154,7 +181,7 @@ const Index = () => {
         enableHighAccuracy: true,
         timeout: 15000,
         maximumAge: 300000,
-      }
+      },
     );
   };
 
@@ -218,6 +245,70 @@ const Index = () => {
 
   // Auto-close dropdown on outside click
   useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement)?.closest(".profile-menu")) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
+  // Location detection on mount
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-slate-900 to-blue-900 shadow-xl sticky top-0 z-30 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 sm:h-18">
+            <div className="flex items-center gap-4">
+              {currentView !== "categories" && (
+                <button
+                  onClick={navigateBack}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </button>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">H</span>
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                    HomeServices Pro
+                  </h1>
+                  <p className="text-blue-200 text-xs hidden sm:block">
+                    Professional Services Platform
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <MapPin className="h-4 w-4 text-blue-300" />
+                <span className="hidden sm:inline text-white font-medium text-sm">
+                  {currentLocation || "Detecting location..."}
+                </span>
+              </div>
+
+              {/* Auth Buttons */}
+              <AccountMenu
+                isLoggedIn={isLoggedIn}
+                userEmail={currentUser?.email || ""}
+                currentUser={currentUser}
+                onLogin={() => setShowAuthModal(true)}
+                onLogout={handleLogout}
+                onViewBookings={() => setCurrentView("history")}
+                className="text-black bg-white hover:bg-gray-50"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
