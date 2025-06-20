@@ -14,7 +14,7 @@ import {
   Phone,
 } from "lucide-react";
 import DateTimePicker from "./DateTimePicker";
-import SimplePhoneAuthModal from "./SimplePhoneAuthModal";
+import MobileFirebaseAuth from "./MobileFirebaseAuth";
 import LocationDetector from "./LocationDetector.tsx";
 import BookingConfirmation from "./BookingConfirmation";
 import { bookingHelpers } from "@/integrations/mongodb/client";
@@ -46,6 +46,14 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
   const [addressCoordinates, setAddressCoordinates] = useState(
     locationCoordinates || null,
   );
+  const [addressDetails, setAddressDetails] = useState({
+    landmark: "",
+    floor: "",
+    area: "",
+    houseNumber: "",
+    apartmentName: "",
+    instructions: "",
+  });
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -126,18 +134,29 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
     // Ensure we have a valid customer ID
 
     const customerId = currentUser._id;
-if (!customerId || customerId.length !== 24) {
-  setError("Invalid user ID. Please login again.");
-  setShowAuthModal(true);
-  return;
-}
-
+    if (!customerId || customerId.length !== 24) {
+      setError("Invalid user ID. Please login again.");
+      setShowAuthModal(true);
+      return;
+    }
 
     setIsProcessing(true);
     setError("");
 
     try {
       const customerId = currentUser._id || currentUser.uid || currentUser.id;
+      // Construct complete address
+      const completeAddress = [
+        addressDetails.houseNumber,
+        addressDetails.apartmentName,
+        selectedAddress,
+        addressDetails.area,
+        addressDetails.landmark && `Near ${addressDetails.landmark}`,
+        addressDetails.floor && `Floor: ${addressDetails.floor}`,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
       const bookingData = {
         customer_id: customerId,
         service: isMultipleServices
@@ -154,19 +173,31 @@ if (!customerId || customerId.length !== 24) {
         provider_name: isMultipleServices
           ? "Multiple Providers"
           : provider?.provider || "Home Services",
-        address: selectedAddress,
+        address: completeAddress || selectedAddress,
         coordinates: addressCoordinates,
-        additional_details: additionalDetails,
+        additional_details: [
+          additionalDetails,
+          addressDetails.instructions &&
+            `Instructions: ${addressDetails.instructions}`,
+        ]
+          .filter(Boolean)
+          .join("\n"),
         total_price: calculateTotalPrice(),
         final_amount: calculateFinalAmount(),
-        special_instructions: additionalDetails,
+        special_instructions: [
+          additionalDetails,
+          addressDetails.instructions,
+          addressDetails.landmark && `Landmark: ${addressDetails.landmark}`,
+          addressDetails.floor && `Floor: ${addressDetails.floor}`,
+        ]
+          .filter(Boolean)
+          .join(", "),
+        address_details: addressDetails,
         charges_breakdown: {
           base_price: calculateTotalPrice(),
-          service_fee: calculateTotalPrice() * 0.1,
-          tax_amount:
-            (calculateTotalPrice() + calculateTotalPrice() * 0.1) * 0.12,
-          discount:
-            calculateFinalAmount() > 200 ? calculateTotalPrice() * 0.05 : 0,
+          service_fee: getDeliveryCharge(),
+          tax_amount: (calculateTotalPrice() + getDeliveryCharge()) * 0.12,
+          discount: getCouponDiscount(),
         },
       };
 
@@ -323,7 +354,7 @@ if (!customerId || customerId.length !== 24) {
                 Service Address
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <LocationDetector
                 onAddressSelect={(address, coordinates) => {
                   setSelectedAddress(address);
@@ -335,6 +366,135 @@ if (!customerId || customerId.length !== 24) {
                 }}
                 defaultValue={selectedAddress}
               />
+
+              {/* Additional Address Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <Label
+                    htmlFor="houseNumber"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    House/Building Number
+                  </Label>
+                  <Input
+                    id="houseNumber"
+                    placeholder="e.g., 123, A-45"
+                    value={addressDetails.houseNumber}
+                    onChange={(e) =>
+                      setAddressDetails({
+                        ...addressDetails,
+                        houseNumber: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="floor"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Floor Number
+                  </Label>
+                  <Input
+                    id="floor"
+                    placeholder="e.g., Ground, 2nd, 15th"
+                    value={addressDetails.floor}
+                    onChange={(e) =>
+                      setAddressDetails({
+                        ...addressDetails,
+                        floor: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="apartmentName"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Apartment/Society Name
+                  </Label>
+                  <Input
+                    id="apartmentName"
+                    placeholder="e.g., Green Valley Apartments"
+                    value={addressDetails.apartmentName}
+                    onChange={(e) =>
+                      setAddressDetails({
+                        ...addressDetails,
+                        apartmentName: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="area"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Area/Locality
+                  </Label>
+                  <Input
+                    id="area"
+                    placeholder="e.g., Sector 25, Downtown"
+                    value={addressDetails.area}
+                    onChange={(e) =>
+                      setAddressDetails({
+                        ...addressDetails,
+                        area: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label
+                    htmlFor="landmark"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Nearby Landmark
+                  </Label>
+                  <Input
+                    id="landmark"
+                    placeholder="e.g., Near City Mall, Opposite Metro Station"
+                    value={addressDetails.landmark}
+                    onChange={(e) =>
+                      setAddressDetails({
+                        ...addressDetails,
+                        landmark: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label
+                    htmlFor="instructions"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Special Instructions
+                  </Label>
+                  <Input
+                    id="instructions"
+                    placeholder="e.g., Ring doorbell twice, Ask for John"
+                    value={addressDetails.instructions}
+                    onChange={(e) =>
+                      setAddressDetails({
+                        ...addressDetails,
+                        instructions: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -449,7 +609,7 @@ if (!customerId || customerId.length !== 24) {
       </div>
 
       {/* Authentication Modal */}
-      <SimplePhoneAuthModal
+      <MobileFirebaseAuth
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleLoginSuccess}

@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://auth-back-ula7.onrender.com/api";
 
 export const authHelpers = {
   // Sign up
@@ -7,7 +9,7 @@ export const authHelpers = {
     password: string,
     name: string,
     phone: string,
-    userType: "customer" | "provider" | "rider" = "customer"
+    userType: "customer" | "provider" | "rider" = "customer",
   ) {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -19,7 +21,10 @@ export const authHelpers = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { data: null, error: { message: data.error || "Registration failed" } };
+        return {
+          data: null,
+          error: { message: data.error || "Registration failed" },
+        };
       }
 
       localStorage.setItem("auth_token", data.token);
@@ -34,7 +39,10 @@ export const authHelpers = {
       };
     } catch (error: any) {
       console.error("Registration error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -65,7 +73,10 @@ export const authHelpers = {
       };
     } catch (error: any) {
       console.error("Login error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -81,13 +92,19 @@ export const authHelpers = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { data: null, error: { message: data.error || "Password reset failed" } };
+        return {
+          data: null,
+          error: { message: data.error || "Password reset failed" },
+        };
       }
 
       return { data: { message: data.message }, error: null };
     } catch (error: any) {
       console.error("Password reset error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -103,13 +120,19 @@ export const authHelpers = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { data: null, error: { message: data.error || "Password update failed" } };
+        return {
+          data: null,
+          error: { message: data.error || "Password update failed" },
+        };
       }
 
       return { data: { message: data.message }, error: null };
     } catch (error: any) {
       console.error("Password update error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -145,7 +168,8 @@ export const authHelpers = {
   async getCurrentUserProfile() {
     try {
       const token = localStorage.getItem("auth_token");
-      if (!token) return { data: null, error: { message: "No authentication token" } };
+      if (!token)
+        return { data: null, error: { message: "No authentication token" } };
 
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: "GET",
@@ -158,13 +182,19 @@ export const authHelpers = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { data: null, error: { message: data.error || "Failed to fetch profile" } };
+        return {
+          data: null,
+          error: { message: data.error || "Failed to fetch profile" },
+        };
       }
 
       return { data: data.user, error: null };
     } catch (error: any) {
       console.error("Profile fetch error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -180,13 +210,19 @@ export const authHelpers = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { data: null, error: { message: data.error || "Token verification failed" } };
+        return {
+          data: null,
+          error: { message: data.error || "Token verification failed" },
+        };
       }
 
       return { data: data.user, error: null };
     } catch (error: any) {
       console.error("Token verification error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -229,7 +265,8 @@ export const authHelpers = {
   async updateProfile(updates: { full_name?: string; phone?: string }) {
     try {
       const token = localStorage.getItem("auth_token");
-      if (!token) return { data: null, error: { message: "No authentication token" } };
+      if (!token)
+        return { data: null, error: { message: "No authentication token" } };
 
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: "PUT",
@@ -243,14 +280,20 @@ export const authHelpers = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { data: null, error: { message: data.error || "Profile update failed" } };
+        return {
+          data: null,
+          error: { message: data.error || "Profile update failed" },
+        };
       }
 
       localStorage.setItem("current_user", JSON.stringify(data.user));
       return { data: data.user, error: null };
     } catch (error: any) {
       console.error("Profile update error:", error);
-      return { data: null, error: { message: "Network error. Please check your connection." } };
+      return {
+        data: null,
+        error: { message: "Network error. Please check your connection." },
+      };
     }
   },
 
@@ -265,6 +308,8 @@ export const authHelpers = {
   },
 
   isLoggedIn() {
-    return !!(localStorage.getItem("auth_token") && localStorage.getItem("current_user"));
+    return !!(
+      localStorage.getItem("auth_token") && localStorage.getItem("current_user")
+    );
   },
 };

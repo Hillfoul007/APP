@@ -26,6 +26,8 @@ const ApiConnectionTest: React.FC = () => {
     setTesting(true);
     setError("");
 
+    const BACKEND_URL = "https://auth-back-ula7.onrender.com";
+
     const newResults = {
       health: null as boolean | null,
       apiTest: null as boolean | null,
@@ -36,7 +38,7 @@ const ApiConnectionTest: React.FC = () => {
     try {
       // Test 1: Health endpoint
       try {
-        const healthResponse = await fetch("/health");
+        const healthResponse = await fetch(`${BACKEND_URL}/health`);
         newResults.health = healthResponse.ok;
       } catch (error) {
         newResults.health = false;
@@ -44,7 +46,7 @@ const ApiConnectionTest: React.FC = () => {
 
       // Test 2: API test endpoint
       try {
-        const apiResponse = await fetch("/api/test");
+        const apiResponse = await fetch(`${BACKEND_URL}/api/test`);
         newResults.apiTest = apiResponse.ok;
       } catch (error) {
         newResults.apiTest = false;
@@ -52,11 +54,14 @@ const ApiConnectionTest: React.FC = () => {
 
       // Test 3: Auth endpoint
       try {
-        const authResponse = await fetch("/api/auth/check-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: "test@example.com" }),
-        });
+        const authResponse = await fetch(
+          `${BACKEND_URL}/api/auth/check-email`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "test@example.com" }),
+          },
+        );
         newResults.authEndpoint = authResponse.ok;
       } catch (error) {
         newResults.authEndpoint = false;
@@ -64,7 +69,9 @@ const ApiConnectionTest: React.FC = () => {
 
       // Test 4: Booking endpoint
       try {
-        const bookingResponse = await fetch("/api/bookings/customer/test123");
+        const bookingResponse = await fetch(
+          `${BACKEND_URL}/api/bookings/customer/test123`,
+        );
         newResults.bookingEndpoint = bookingResponse.ok;
       } catch (error) {
         newResults.bookingEndpoint = false;
@@ -183,7 +190,7 @@ const ApiConnectionTest: React.FC = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               ❌ Some connections failed. Make sure the backend server is
-              running on port 3001.
+              running on Render.
             </AlertDescription>
           </Alert>
         )}
@@ -202,7 +209,7 @@ const ApiConnectionTest: React.FC = () => {
           {allConnected && (
             <Button className="flex items-center gap-2" asChild>
               <a
-                href="http://localhost:3001/health"
+                href="https://auth-back-ula7.onrender.com/health"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -214,7 +221,7 @@ const ApiConnectionTest: React.FC = () => {
         </div>
 
         <div className="text-xs text-gray-500 space-y-1">
-          <p>🔧 Backend: Proxied through Vite dev server</p>
+          <p>🔧 Backend: https://auth-back-ula7.onrender.com</p>
           <p>📊 Health: /health</p>
           <p>🧪 API Test: /api/test</p>
         </div>

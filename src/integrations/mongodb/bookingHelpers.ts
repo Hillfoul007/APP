@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://auth-back-ula7.onrender.com/api";
 
 interface Booking {
   _id?: string;
@@ -46,12 +48,8 @@ export const bookingHelpers = {
   // ✅ Create new booking
   async createBooking(bookingData: Partial<Booking>) {
     try {
-
-
       const user = JSON.parse(localStorage.getItem("current_user") || "{}");
-const customerId = user?._id;
-
-      
+      const customerId = user?._id;
 
       if (!user._id) {
         throw new Error("Logged-in user ID not found in local storage");

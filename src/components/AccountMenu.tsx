@@ -38,10 +38,12 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
     return (
       <Button
         onClick={onLogin}
-        className={`flex items-center space-x-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition-all duration-300 hover:scale-105 ${className}`}
+        className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg ${className}`}
       >
         <User className="w-4 h-4 text-white" />
-        <span className="text-white font-medium">Sign In</span>
+        <span className="text-white font-medium text-sm sm:text-base">
+          Sign In
+        </span>
       </Button>
     );
   }

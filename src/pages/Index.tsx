@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import ServiceCategories from "../components/ServiceCategories";
+import MobileServiceCategories from "../components/MobileServiceCategories";
 import BookingFlow from "../components/BookingFlow";
-import EnhancedBookingHistory from "../components/EnhancedBookingHistory";
+import MobileBookingHistory from "../components/MobileBookingHistory";
 import Reviews from "../components/Reviews";
 import JoinAsPro from "./JoinAsPro.tsx";
 import AccountMenu from "../components/AccountMenu"; // Can be removed if unused
-import SimplePhoneAuthModal from "../components/SimplePhoneAuthModal";
+import MobileFirebaseAuth from "../components/MobileFirebaseAuth";
 import { ArrowLeft, MapPin, UserCircle } from "lucide-react";
 import {
   getCurrentUser,
@@ -78,63 +78,111 @@ const Index = () => {
       window.removeEventListener("bookCartServices", handleCartBooking);
   }, []);
 
-  // Google Maps reverse geocoding
-  const getUserLocation = () => {
-    // Set a default location immediately
-    setCurrentLocation("New York, NY");
+  // Real location detection
+  const getUserLocation = async () => {
+    // Set loading state initially
+    setCurrentLocation("Detecting location...");
 
-    // Skip geolocation for now to avoid fetch errors
-    // In production, you would implement proper geolocation
-
-    // Simple mock location detection for demo
-    setTimeout(() => {
-      setCurrentLocation("New York, NY");
-      setLocationCoordinates({ lat: 40.7128, lng: -74.006 });
-    }, 1000);
-
-    return;
-
-    // The below code is disabled to prevent fetch errors
-    /*
     if (!navigator.geolocation) {
-      setCurrentLocation("New York, NY");
+      setCurrentLocation("Location not available");
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocationCoordinates({ lat: latitude, lng: longitude });
-
         try {
-          // Try backend API only (no external APIs)
-          const backendResponse = await fetch('/api/location/geocode', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat: latitude, lng: longitude })
-          });
+          const { latitude, longitude } = position.coords;
+          setLocationCoordinates({ lat: latitude, lng: longitude });
 
-          if (backendResponse.ok) {
-            const data = await backendResponse.json();
-            setCurrentLocation(data.address || "New York, NY");
-          } else {
-            setCurrentLocation("New York, NY");
+          // Try backend geocoding first
+          const API_BASE_URL =
+            import.meta.env.VITE_API_BASE_URL ||
+            "https://auth-back-ula7.onrender.com/api";
+          try {
+            const backendResponse = await fetch(
+              `${API_BASE_URL}/location/geocode`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lat: latitude, lng: longitude }),
+              },
+            );
+
+            if (backendResponse.ok) {
+              const data = await backendResponse.json();
+              setCurrentLocation(
+                data.address ||
+                  `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              );
+              return;
+            }
+          } catch (backendError) {
+            console.log(
+              "Backend geocoding failed, trying fallback:",
+              backendError,
+            );
+          }
+
+          // Fallback to OpenStreetMap if backend fails
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              let address = "";
+
+              if (data.address) {
+                const parts = [];
+                if (data.address.road) parts.push(data.address.road);
+                if (data.address.suburb || data.address.neighbourhood)
+                  parts.push(data.address.suburb || data.address.neighbourhood);
+                if (
+                  data.address.city ||
+                  data.address.town ||
+                  data.address.village
+                )
+                  parts.push(
+                    data.address.city ||
+                      data.address.town ||
+                      data.address.village,
+                  );
+                if (data.address.state) parts.push(data.address.state);
+                address = parts.join(", ");
+              }
+
+              setCurrentLocation(
+                address ||
+                  data.display_name ||
+                  `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              );
+            } else {
+              setCurrentLocation(
+                `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              );
+            }
+          } catch (nominatimError) {
+            console.log("Nominatim geocoding failed:", nominatimError);
+            setCurrentLocation(
+              `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            );
           }
         } catch (err) {
-          console.log("Location detection skipped:", err);
-          setCurrentLocation("New York, NY");
+          console.log("Location processing failed:", err);
+          setCurrentLocation("Location detection failed");
         }
       },
       (err) => {
         console.log("Geolocation permission denied or failed:", err);
-        setCurrentLocation("New York, NY");
+        setCurrentLocation("Location access denied");
       },
       {
-        timeout: 5000,
-        maximumAge: 300000
-      }
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 300000,
+      },
     );
-    */
   };
 
   const navigateBack = () => {
@@ -206,13 +254,18 @@ const Index = () => {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
+  // Location detection on mount
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
       <header className="bg-gradient-to-r from-slate-900 to-blue-900 shadow-xl sticky top-0 z-30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 sm:h-18">
-            <div className="flex items-center gap-4">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            <div className="flex items-center gap-2 sm:gap-4">
               {currentView !== "categories" && (
                 <button
                   onClick={navigateBack}
@@ -221,26 +274,28 @@ const Index = () => {
                   <ArrowLeft className="h-5 w-5 text-white" />
                 </button>
               )}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">H</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg sm:text-xl">
+                    H
+                  </span>
                 </div>
-                <div>
-                  <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                <div className="hidden sm:block">
+                  <h1 className="text-xl font-bold text-white tracking-tight">
                     HomeServices Pro
                   </h1>
-                  <p className="text-blue-200 text-xs hidden sm:block">
+                  <p className="text-blue-200 text-xs">
                     Professional Services Platform
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 px-2 sm:px-3 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <MapPin className="h-4 w-4 text-blue-300" />
-                <span className="hidden sm:inline text-white font-medium text-sm">
-                  {currentLocation || "Detecting location..."}
+                <span className="text-white font-medium text-xs sm:text-sm max-w-24 sm:max-w-none truncate">
+                  {currentLocation || "Detecting..."}
                 </span>
               </div>
 
@@ -260,9 +315,9 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-8">
         {currentView === "categories" && (
-          <ServiceCategories
+          <MobileServiceCategories
             onServiceSelect={handleServiceSelect}
             onMultipleServicesSelect={handleMultipleServicesSelect}
           />
@@ -280,7 +335,7 @@ const Index = () => {
           />
         )}
         {currentView === "history" && (
-          <EnhancedBookingHistory currentUser={currentUser} />
+          <MobileBookingHistory currentUser={currentUser} />
         )}
         {currentView === "reviews" && <Reviews provider={selectedProvider} />}
         {currentView === "joinAsPro" && (
@@ -293,7 +348,7 @@ const Index = () => {
       </main>
 
       {/* Auth Modal */}
-      <SimplePhoneAuthModal
+      <MobileFirebaseAuth
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleLoginSuccess}

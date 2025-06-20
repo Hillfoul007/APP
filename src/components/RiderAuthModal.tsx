@@ -91,7 +91,10 @@ const RiderAuthModal: React.FC<RiderAuthModalProps> = ({
 
     try {
       // Try backend API first
-      const response = await fetch("/api/auth/login", {
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL ||
+        "https://auth-back-ula7.onrender.com/api";
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -545,7 +548,7 @@ const RiderAuthModal: React.FC<RiderAuthModalProps> = ({
                 Service Provider Benefits:
               </h4>
               <ul className="text-sm text-green-700 space-y-1">
-                <li>• Accept bookings within 5km range</li>
+                <li>�� Accept bookings within 5km range</li>
                 <li>• Real-time navigation to customers</li>
                 <li>• Instant payment collection</li>
                 <li>• Professional dashboard</li>

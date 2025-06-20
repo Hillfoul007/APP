@@ -9,7 +9,6 @@ import RiderPortal from "./pages/RiderPortal.tsx";
 import EnhancedRiderPortal from "./pages/EnhancedRiderPortal.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import FloatingCart from "./components/FloatingCart";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
@@ -32,12 +31,6 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <FloatingCart
-            onBookServices={() => {
-              // Dispatch custom event to trigger booking flow
-              window.dispatchEvent(new CustomEvent("bookCartServices"));
-            }}
-          />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

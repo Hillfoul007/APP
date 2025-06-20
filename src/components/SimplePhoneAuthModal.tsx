@@ -92,7 +92,10 @@ const SimplePhoneAuthModal: React.FC<SimplePhoneAuthModalProps> = ({
 
   const checkUserInMongoDB = async (phone: string) => {
     try {
-      const response = await fetch("/api/auth/check-phone", {
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL ||
+        "https://auth-back-ula7.onrender.com/api";
+      const response = await fetch(`${API_BASE_URL}/auth/check-phone`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone }),
@@ -117,7 +120,7 @@ const SimplePhoneAuthModal: React.FC<SimplePhoneAuthModalProps> = ({
 
   const createUserInMongoDB = async (userData: any) => {
     try {
-      const response = await fetch("/api/auth/register-phone", {
+      const response = await fetch(`${API_BASE_URL}/auth/register-phone`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
