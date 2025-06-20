@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MobileServiceCategories from "../components/MobileServiceCategories";
-import BookingFlow from "../components/BookingFlow";
-import EnhancedBookingHistory from "../components/EnhancedBookingHistory";
+import MobileBookingFlow from "../components/MobileBookingFlow";
+import MobileBookingHistory from "../components/MobileBookingHistory";
 import Reviews from "../components/Reviews";
 import JoinAsPro from "./JoinAsPro.tsx";
 import AccountMenu from "../components/AccountMenu"; // Can be removed if unused
@@ -323,7 +323,7 @@ const Index = () => {
           />
         )}
         {currentView === "booking" && (
-          <BookingFlow
+          <MobileBookingFlow
             provider={selectedProvider}
             services={selectedServices}
             isMultipleServices={isMultipleServices}
@@ -335,7 +335,7 @@ const Index = () => {
           />
         )}
         {currentView === "history" && (
-          <EnhancedBookingHistory currentUser={currentUser} />
+          <MobileBookingHistory currentUser={currentUser} />
         )}
         {currentView === "reviews" && <Reviews provider={selectedProvider} />}
         {currentView === "joinAsPro" && (
