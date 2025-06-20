@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import MobileServiceCategories from "../components/MobileServiceCategories";
-import MobileBookingFlow from "../components/MobileBookingFlow";
+import BookingFlow from "../components/BookingFlow";
 import MobileBookingHistory from "../components/MobileBookingHistory";
 import Reviews from "../components/Reviews";
 import JoinAsPro from "./JoinAsPro.tsx";
@@ -323,7 +323,7 @@ const Index = () => {
           />
         )}
         {currentView === "booking" && (
-          <MobileBookingFlow
+          <BookingFlow
             provider={selectedProvider}
             services={selectedServices}
             isMultipleServices={isMultipleServices}

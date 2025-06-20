@@ -14,7 +14,7 @@ import {
   Phone,
 } from "lucide-react";
 import DateTimePicker from "./DateTimePicker";
-import SimplePhoneAuthModal from "./SimplePhoneAuthModal";
+import MobileFirebaseAuth from "./MobileFirebaseAuth";
 import LocationDetector from "./LocationDetector.tsx";
 import BookingConfirmation from "./BookingConfirmation";
 import { bookingHelpers } from "@/integrations/mongodb/client";

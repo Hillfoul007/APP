@@ -173,6 +173,26 @@ const MobileServiceCategories: React.FC<ServiceCategoriesProps> = ({
     setCart(cart.filter((item) => item.id !== itemId));
   };
 
+  const updateQuantity = (itemId: string, change: number) => {
+    setCart(
+      cart
+        .map((item) => {
+          if (item.id === itemId) {
+            const newQuantity = item.quantity + change;
+            return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+          }
+          return item;
+        })
+        .filter((item) => item.quantity > 0),
+    );
+  };
+
+  const getItemQuantity = (serviceId: string, categoryId: string) => {
+    const itemId = `${categoryId}-${serviceId}`;
+    const item = cart.find((item) => item.id === itemId);
+    return item ? item.quantity : 0;
+  };
+
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
@@ -268,25 +288,46 @@ const MobileServiceCategories: React.FC<ServiceCategoriesProps> = ({
                           </div>
                         </div>
 
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() =>
-                              onServiceSelect({
-                                ...service,
-                                provider: service.provider,
-                              })
-                            }
-                            className={`flex-1 bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-3 rounded-xl transition-all duration-300`}
-                          >
-                            Book Now
-                          </Button>
-                          <Button
-                            onClick={() => addToCart(service, category)}
-                            variant="outline"
-                            className="px-4 py-3 rounded-xl border-2 hover:bg-gray-50"
-                          >
-                            <ShoppingCart className="h-4 w-4" />
-                          </Button>
+                        <div className="space-y-3">
+                          {getItemQuantity(service.name, category.id) > 0 ? (
+                            <div className="flex items-center justify-between">
+                              <Button
+                                onClick={() =>
+                                  updateQuantity(
+                                    `${category.id}-${service.name}`,
+                                    -1,
+                                  )
+                                }
+                                variant="outline"
+                                className="w-10 h-10 rounded-full p-0 border-2"
+                              >
+                                -
+                              </Button>
+                              <span className="text-lg font-semibold px-4">
+                                {getItemQuantity(service.name, category.id)}
+                              </span>
+                              <Button
+                                onClick={() =>
+                                  updateQuantity(
+                                    `${category.id}-${service.name}`,
+                                    1,
+                                  )
+                                }
+                                variant="outline"
+                                className="w-10 h-10 rounded-full p-0 border-2"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => addToCart(service, category)}
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-3 rounded-xl transition-all duration-300`}
+                            >
+                              <ShoppingCart className="mr-2 h-4 w-4" />
+                              Add to Cart
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -298,54 +339,16 @@ const MobileServiceCategories: React.FC<ServiceCategoriesProps> = ({
         })}
       </div>
 
-      {/* Floating Cart - Mobile Optimized */}
+      {/* Fixed Cart Button */}
       {cart.length > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 z-50">
-          <Card className="border-0 shadow-2xl rounded-2xl overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="font-semibold">
-                    {cart.length} items in cart
-                  </span>
-                </div>
-                <div className="text-xl font-bold">${getTotalPrice()}</div>
-              </div>
-
-              <div className="max-h-32 overflow-y-auto mb-3 space-y-2">
-                {cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between bg-white/10 rounded-lg p-2"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{item.name}</p>
-                      <p className="text-xs opacity-80">Qty: {item.quantity}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">
-                        ${item.price * item.quantity}
-                      </span>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-white/80 hover:text-white"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <Button
-                onClick={() => onMultipleServicesSelect(cart)}
-                className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-3 rounded-xl"
-              >
-                Book All Services
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button
+            onClick={() => onMultipleServicesSelect(cart)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-full shadow-2xl border-4 border-white"
+          >
+            <ShoppingCart className="mr-2 h-5 w-5" />
+            Cart ({cart.length}) - ${getTotalPrice()}
+          </Button>
         </div>
       )}
     </div>
