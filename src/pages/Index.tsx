@@ -78,63 +78,84 @@ const Index = () => {
       window.removeEventListener("bookCartServices", handleCartBooking);
   }, []);
 
-  // Google Maps reverse geocoding
-  const getUserLocation = () => {
-    // Set a default location immediately
-    setCurrentLocation("New York, NY");
+  // Real location detection
+  const getUserLocation = async () => {
+    // Set loading state initially
+    setCurrentLocation("Detecting location...");
 
-    // Skip geolocation for now to avoid fetch errors
-    // In production, you would implement proper geolocation
-
-    // Simple mock location detection for demo
-    setTimeout(() => {
-      setCurrentLocation("New York, NY");
-      setLocationCoordinates({ lat: 40.7128, lng: -74.006 });
-    }, 1000);
-
-    return;
-
-    // The below code is disabled to prevent fetch errors
-    /*
     if (!navigator.geolocation) {
-      setCurrentLocation("New York, NY");
+      setCurrentLocation("Location not available");
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocationCoordinates({ lat: latitude, lng: longitude });
-
         try {
-          // Try backend API only (no external APIs)
-          const backendResponse = await fetch('/api/location/geocode', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat: latitude, lng: longitude })
-          });
+          const { latitude, longitude } = position.coords;
+          setLocationCoordinates({ lat: latitude, lng: longitude });
 
-          if (backendResponse.ok) {
-            const data = await backendResponse.json();
-            setCurrentLocation(data.address || "New York, NY");
-          } else {
-            setCurrentLocation("New York, NY");
+          // Try backend geocoding first
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://auth-back-ula7.onrender.com/api";
+          try {
+            const backendResponse = await fetch(`${API_BASE_URL}/location/geocode`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ lat: latitude, lng: longitude })
+            });
+
+            if (backendResponse.ok) {
+              const data = await backendResponse.json();
+              setCurrentLocation(data.address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+              return;
+            }
+          } catch (backendError) {
+            console.log("Backend geocoding failed, trying fallback:", backendError);
+          }
+
+          // Fallback to OpenStreetMap if backend fails
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              let address = "";
+
+              if (data.address) {
+                const parts = [];
+                if (data.address.road) parts.push(data.address.road);
+                if (data.address.suburb || data.address.neighbourhood)
+                  parts.push(data.address.suburb || data.address.neighbourhood);
+                if (data.address.city || data.address.town || data.address.village)
+                  parts.push(data.address.city || data.address.town || data.address.village);
+                if (data.address.state) parts.push(data.address.state);
+                address = parts.join(", ");
+              }
+
+              setCurrentLocation(address || data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            } else {
+              setCurrentLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            }
+          } catch (nominatimError) {
+            console.log("Nominatim geocoding failed:", nominatimError);
+            setCurrentLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           }
         } catch (err) {
-          console.log("Location detection skipped:", err);
-          setCurrentLocation("New York, NY");
+          console.log("Location processing failed:", err);
+          setCurrentLocation("Location detection failed");
         }
       },
       (err) => {
         console.log("Geolocation permission denied or failed:", err);
-        setCurrentLocation("New York, NY");
+        setCurrentLocation("Location access denied");
       },
       {
-        timeout: 5000,
-        maximumAge: 300000
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 300000,
       }
     );
-    */
   };
 
   const navigateBack = () => {
@@ -197,88 +218,6 @@ const Index = () => {
 
   // Auto-close dropdown on outside click
   useEffect(() => {
-    // Set a loading state initially
-    setCurrentLocation("Detecting location...");
-
-    // Detect actual location
-    const detectLocation = async () => {
-      if (!navigator.geolocation) {
-        setCurrentLocation("Location not available");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            setLocationCoordinates({ lat: latitude, lng: longitude });
-
-            // Try backend geocoding first
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://auth-back-ula7.onrender.com/api";
-            try {
-              const backendResponse = await fetch(`${API_BASE_URL}/location/geocode`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lat: latitude, lng: longitude })
-              });
-
-              if (backendResponse.ok) {
-                const data = await backendResponse.json();
-                setCurrentLocation(data.address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-                return;
-              }
-            } catch (backendError) {
-              console.log("Backend geocoding failed, trying fallback:", backendError);
-            }
-
-            // Fallback to OpenStreetMap if backend fails
-            try {
-              const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-              );
-
-              if (response.ok) {
-                const data = await response.json();
-                let address = "";
-
-                if (data.address) {
-                  const parts = [];
-                  if (data.address.road) parts.push(data.address.road);
-                  if (data.address.suburb || data.address.neighbourhood)
-                    parts.push(data.address.suburb || data.address.neighbourhood);
-                  if (data.address.city || data.address.town || data.address.village)
-                    parts.push(data.address.city || data.address.town || data.address.village);
-                  if (data.address.state) parts.push(data.address.state);
-                  address = parts.join(", ");
-                }
-
-                setCurrentLocation(address || data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-              } else {
-                setCurrentLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-              }
-            } catch (nominatimError) {
-              console.log("Nominatim geocoding failed:", nominatimError);
-              setCurrentLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-            }
-          } catch (err) {
-            console.log("Location processing failed:", err);
-            setCurrentLocation("Location detection failed");
-          }
-        },
-        (err) => {
-          console.log("Geolocation permission denied or failed:", err);
-          setCurrentLocation("Location access denied");
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 300000,
-        },
-      );
-    };
-
-    detectLocation();
-  }, []);
         </div>
       </header>
 
